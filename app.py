@@ -23,6 +23,26 @@ def health():
         "status": "healthy"
     }
 
+@app.route("/mock", methods=["GET"])
+def mock_analysis():
+    queue_count = 8
+    service_rate = 2.0
+
+    estimated_wait = calculate_waiting_time(
+        queue_count,
+        service_rate
+    )
+
+    status = get_queue_status(queue_count)
+
+    return {
+        "queue_count": queue_count,
+        "service_rate": service_rate,
+        "estimated_wait": estimated_wait,
+        "status": status
+    }
+
+
 @app.route("/upload", methods=["POST"])
 def upload_file():
     if "file" not in request.files:
