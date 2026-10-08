@@ -1,8 +1,13 @@
 from flask import Flask, request
+import os
 
 from intelligence import calculate_waiting_time, get_queue_status
 
 app = Flask(__name__)
+UPLOAD_FOLDER = "uploads"
+
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 
 @app.route("/")
@@ -16,6 +21,32 @@ def home():
 def health():
     return {
         "status": "healthy"
+    }
+
+@app.route("/upload", methods=["POST"])
+def upload_file():
+    if "file" not in request.files:
+        return {
+            "error": "No file provided"
+        }, 400
+
+    file = request.files["file"]
+
+    if file.filename == "":
+        return {
+            "error": "No file selected"
+        }, 400
+
+    file_path = os.path.join(
+        app.config["UPLOAD_FOLDER"],
+        file.filename
+    )
+
+    file.save(file_path)
+
+    return {
+        "message": "File uploaded successfully",
+        "filename": file.filename
     }
 
 
