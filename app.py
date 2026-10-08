@@ -98,7 +98,7 @@ def analyze():
     return {
     "queue_count": queue_count,
     "service_rate": service_rate,
-    "waiting_time": waiting_time,
+    "estimated_wait": waiting_time,
     "status": status
     }
 
