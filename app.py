@@ -2,8 +2,10 @@ from flask import Flask, request
 import os
 
 from intelligence import calculate_waiting_time, get_queue_status
+from cv.cv_pipeline import process_input
 
 app = Flask(__name__)
+
 UPLOAD_FOLDER = "uploads"
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -41,8 +43,6 @@ def mock_analysis():
         "estimated_wait": estimated_wait,
         "status": status
     }
-
-
 @app.route("/upload", methods=["POST"])
 def upload_file():
     if "file" not in request.files:
@@ -64,11 +64,24 @@ def upload_file():
 
     file.save(file_path)
 
-    return {
-        "message": "File uploaded successfully",
-        "filename": file.filename
-    }
+    cv_result = process_input(file_path)
 
+    queue_count = cv_result["queue_count"]
+    service_rate = cv_result["service_rate"]
+
+    estimated_wait = calculate_waiting_time(
+        queue_count,
+        service_rate
+    )
+
+    status = get_queue_status(queue_count)
+
+    return {
+        "queue_count": queue_count,
+        "service_rate": service_rate,
+        "estimated_wait": estimated_wait,
+        "status": status
+    }
 
 @app.route("/analyze", methods=["POST"])
 def analyze():
